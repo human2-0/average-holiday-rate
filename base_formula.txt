@@ -1,0 +1,23 @@
+Monthly Holiday Rate Calculation for Hourly Paid Employees
+
+To calculate the monthly holiday rate employers need to look at the previous 52 weeks pay or in our case the last 12 months payslips.
+
+The base pay to include in this average holiday pay calculation are as follows:
+
+Salary, All Hourly paid hours, Overtime, Twilight/Night/Double Pay, Holiday, Happy Birthday, Compassionate Leave, Lush Sick Pay, Back pay, Holiday Pay, KIT DAYS.
+
+Each month we divide the total base pay in the month by the hourly rate to get the total hours worked. Eg - £1,800 base divided by £9.00 = 200 hours
+
+This is then divided by the days in that month and multiplied by the days in the year then divided by 52 to get the weekly average. Eg - 200 hours divided by 31 = 6.45 multiplied by 365 (days in year) = 2354.83 divided by 52 (weeks in year) = 45.28 giving total average hours worked.
+
+We do the same with the bonus amount paid to get the weekly bonus average.
+Eg Total Bonus Jan £150 ÷ 31 days multiplied by 365 days divided by 52 weeks = £33.96 avg bonus a week which is £33.96 ÷ 45.28 (avg hours) = £0.75 average bonus per hour.
+
+This is then combined for the previous 52 weeks/12 months to get the 52 week average hours and average bonus to compare to current contracted hours.
+
+If the average hours are more than the contracted hours then we will pay the difference between the hourly rate and what the average hourly rate should be. If the average is below we will pay at the current hourly rate.
+Eg Contracted hours 40 and Current Rate £9.00 but Average rate is 45.28 x £9 ÷ 40 = Average holiday rate of £10.18.
+
+We then add the average bonus to this rate. eg £10.18 plus £0.75 = Holiday Rate of £10.93
+
+Please Note; We take out any months of absence or statutory payments and for those who haven’t been employed for 52 weeks will go back to their start date.

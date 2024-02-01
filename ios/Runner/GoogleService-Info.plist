@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>6231951620-2a5g1qtask91sue752ovja686p6eqd8d.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.6231951620-2a5g1qtask91sue752ovja686p6eqd8d</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>6231951620-hgi5u7c8g1657hp48bck53rcv4qhk8ps.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyChmTtnNbOMKV381TfleUUlHnAwLSO_eCo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>6231951620</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.devulopa.averageHolidayRatePay</string>
+	<key>PROJECT_ID</key>
+	<string>holidayrate</string>
+	<key>STORAGE_BUCKET</key>
+	<string>holidayrate.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:6231951620:ios:0e0a5929440fffb831e851</string>
+</dict>
+</plist>

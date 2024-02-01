@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "6231951620",
+    "project_id": "holidayrate",
+    "storage_bucket": "holidayrate.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6231951620:android:77980c9d27fe409731e851",
+        "android_client_info": {
+          "package_name": "com.devulopa.average_holiday_rate_pay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "6231951620-hgi5u7c8g1657hp48bck53rcv4qhk8ps.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.devulopa.average_holiday_rate_pay",
+            "certificate_hash": "9cb677ccc17f27f3e35afad428bcb4b831524abb"
+          }
+        },
+        {
+          "client_id": "6231951620-ol36qv55h1ffofjfg392m5keff3jra5e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcBeuz0Gg7a4RFRP4_YTQAf4i1jodb0cs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "6231951620-ol36qv55h1ffofjfg392m5keff3jra5e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
