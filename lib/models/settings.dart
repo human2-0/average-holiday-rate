@@ -4,17 +4,14 @@ part 'settings.g.dart'; // Hive generator
 
 @HiveType(typeId: 1) // Ensure typeId is unique if you have other Hive types
 class Settings extends HiveObject {
-
   Settings({required this.payRate, required this.contractedHours});
+
   @HiveField(0)
-  double payRate;
+  final double payRate;
 
   @HiveField(1)
-  double contractedHours;
-
+  final double contractedHours;
 }
-
-
 class UserSettingsState {
 
   UserSettingsState({this.settings, this.isLoading = false, this.error});

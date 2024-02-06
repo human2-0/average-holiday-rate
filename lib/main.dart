@@ -1,4 +1,3 @@
-import 'package:average_holiday_rate_pay/customs/toast.dart';
 import 'package:average_holiday_rate_pay/firebase_options.dart';
 import 'package:average_holiday_rate_pay/models/payslip.dart';
 import 'package:average_holiday_rate_pay/models/settings.dart';
@@ -6,7 +5,6 @@ import 'package:average_holiday_rate_pay/router/go_router_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
@@ -48,11 +46,9 @@ class MyAppState extends ConsumerState<MyApp> {
     BuildContext context,
   ) {
     final router = ref.watch(routerProvider);
-    CustomToast.initialize(context);
 
 
     return MaterialApp.router(
-      builder: FToastBuilder(),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',

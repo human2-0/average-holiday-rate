@@ -107,7 +107,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
 
     // Add the Payslip and handle the response
     try {
-      await ref.read(payslipRepositoryProvider).addPayslip(newPayslip);
+      await ref.read(payslipNotifierProvider.notifier).addPayslip(newPayslip);
       if (mounted) {
         CustomToast('Payslip added successfully', const Icon(Icons.done_outline_rounded), Colors.greenAccent)
             .showCustomToast();

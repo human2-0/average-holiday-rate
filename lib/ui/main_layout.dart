@@ -1,3 +1,4 @@
+import 'package:average_holiday_rate_pay/customs/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,7 +15,9 @@ class _MainLayoutState extends State<MainLayout> {
   int currentMonthIndex = 0; // To track the current month
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    CustomToast.initialize(context);
+    return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(), // Create a notch for the FAB
@@ -70,5 +73,5 @@ class _MainLayoutState extends State<MainLayout> {
         ),
       ),
       body: widget.bodyContent,
-    );
+    );}
 }

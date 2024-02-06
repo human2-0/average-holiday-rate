@@ -1,8 +1,8 @@
 import 'package:average_holiday_rate_pay/customs/page_transistion.dart';
 import 'package:average_holiday_rate_pay/ui/add_new_payslip.dart';
-import 'package:average_holiday_rate_pay/ui/dashboard_charts.dart';
+import 'package:average_holiday_rate_pay/ui/calendar_history.dart';
+import 'package:average_holiday_rate_pay/ui/dashboard/dashboard_layout.dart';
 import 'package:average_holiday_rate_pay/ui/main_layout.dart';
-import 'package:average_holiday_rate_pay/ui/payslip_history.dart';
 import 'package:average_holiday_rate_pay/ui/profile/login_screen.dart';
 import 'package:average_holiday_rate_pay/ui/profile/profile.dart';
 import 'package:average_holiday_rate_pay/ui/profile/signup_screen.dart';

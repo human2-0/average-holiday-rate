@@ -13,12 +13,16 @@ class AuthStateNotifier extends StateNotifier<User?> {
   final AuthenticationRepository _authRepo;
 
   Future<UserCredential> signInWithEmailAndPassword(
-      String email, String password,) async {
+    String email,
+    String password,
+  ) async {
     return _authRepo.signInWithEmailAndPassword(email, password);
   }
 
   Future<UserCredential> signUpWithEmailAndPassword(
-      String email, String password,) async {
+    String email,
+    String password,
+  ) async {
     return _authRepo.signUpWithEmailAndPassword(email, password);
   }
 
@@ -36,23 +40,14 @@ class AuthStateNotifier extends StateNotifier<User?> {
     }
   }
 
-
   Future<void> signOut() async {
     await _authRepo.signOut();
   }
 }
 
-final authStateNotifierProvider = StateNotifierProvider<AuthStateNotifier, User?>((ref) {
-  return AuthStateNotifier(ref.watch(authRepositoryProvider));
-});
-
-final authRepositoryProvider = Provider<AuthenticationRepository>((ref) {
-  return AuthenticationRepository();
-});
-
 class UserSettingsNotifier extends StateNotifier<UserSettingsState> {
-
-  UserSettingsNotifier({required this.authRepository}) : super(UserSettingsState());
+  UserSettingsNotifier({required this.authRepository})
+      : super(UserSettingsState());
   final AuthenticationRepository authRepository;
 
   Future<void> fetchUserSettings(String userId) async {
@@ -67,7 +62,8 @@ class UserSettingsNotifier extends StateNotifier<UserSettingsState> {
 
   Future<void> updateUserSettings(String userId, Settings newSettings) async {
     try {
-      await authRepository.createOrUpdateUserSettings(userId, newSettings: newSettings);
+      await authRepository.createOrUpdateUserSettings(userId,
+          newSettings: newSettings,);
       // Update the state with the new or updated settings
       state = state.copyWith(settings: newSettings);
     } on FormatException catch (e) {
@@ -77,8 +73,18 @@ class UserSettingsNotifier extends StateNotifier<UserSettingsState> {
   }
 }
 
-// Step 3: Use StateNotifierProvider
-final userSettingsProvider = StateNotifierProvider.family<UserSettingsNotifier, UserSettingsState, String>((ref, userId) {
+final userSettingsProvider = StateNotifierProvider.family<UserSettingsNotifier,
+    UserSettingsState, String>((ref, userId) {
   final authRepository = ref.watch(authRepositoryProvider);
-  return UserSettingsNotifier(authRepository: authRepository)..fetchUserSettings(userId);
+  return UserSettingsNotifier(authRepository: authRepository)
+    ..fetchUserSettings(userId);
+});
+
+final authStateNotifierProvider =
+    StateNotifierProvider<AuthStateNotifier, User?>((ref) {
+  return AuthStateNotifier(ref.watch(authRepositoryProvider));
+});
+
+final authRepositoryProvider = Provider<AuthenticationRepository>((ref) {
+  return AuthenticationRepository();
 });
