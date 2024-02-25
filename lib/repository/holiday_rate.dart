@@ -124,14 +124,21 @@ class HolidayRateRepository {
     var totalAverageHours = 0.0;
     var totalAverageBonus = 0.0;
 
+
+
+
     for (final payslip in payslips) {
       final daysInMonth = DateUtils.getDaysInMonth(payslip.startDate.year, payslip.startDate.month);
+
       final averageHours = payslip.hoursWorked;
       final averageBonus = payslip.bonusesEarned;
 
       // Adjust to weekly averages
       final weeklyAverageHours = (averageHours / daysInMonth) * 365 / 52;
       final weeklyBonusAverage = (averageBonus / daysInMonth) * 365 / 52;
+
+
+
 
       totalAverageHours += weeklyAverageHours;
       totalAverageBonus += weeklyBonusAverage;
@@ -141,16 +148,18 @@ class HolidayRateRepository {
     final yearlyAverageHours = totalAverageHours / 12;
     final yearlyAverageBonus = totalAverageBonus / 12;
 
+
+
+
     // Adjust the holiday rate based on the yearly averages
     var holidayRate = hourlyRate;
     if (yearlyAverageHours > contractedHours) {
       holidayRate = hourlyRate * (yearlyAverageHours / contractedHours);
     }
 
-    // Calculate bonus per hour
-    final averageBonusPerHour = yearlyAverageBonus / yearlyAverageHours;
+    final averageBonusPerHour = yearlyAverageHours > 0 ? yearlyAverageBonus / yearlyAverageHours : 0;
 
-    return holidayRate += averageBonusPerHour;
+    return holidayRate + averageBonusPerHour;
   }
 
   Future<List<Payslip>> fetchAllSortedPayslips() async {

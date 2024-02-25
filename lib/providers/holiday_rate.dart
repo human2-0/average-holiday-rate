@@ -2,20 +2,18 @@ import 'package:average_holiday_rate_pay/providers/auth.dart';
 import 'package:average_holiday_rate_pay/repository/holiday_rate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HolidayRateState { // Notice this is nullable
-
+class HolidayRateState {
   HolidayRateState({required this.holidayRate, this.historicalHolidayRates});
   final double holidayRate;
-  final Map<String,double>? historicalHolidayRates;
+  final Map<String, double>? historicalHolidayRates;
 
-  // Implementing copyWith method correctly
   HolidayRateState copyWith({
     double? holidayRate,
-    Map<String,double>? historicalHolidayRates,
+    Map<String, double>? historicalHolidayRates,
   }) {
     return HolidayRateState(
-      holidayRate: holidayRate ?? this.holidayRate, // Use the provided value or fallback to the current state
-      historicalHolidayRates: historicalHolidayRates ?? this.historicalHolidayRates, // Same here
+      holidayRate: holidayRate ?? this.holidayRate,
+      historicalHolidayRates: historicalHolidayRates ?? this.historicalHolidayRates,
     );
   }
 }
