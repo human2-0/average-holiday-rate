@@ -37,10 +37,12 @@ class AppRouter extends ChangeNotifier {
         ),
         GoRoute(
           path: '/addPayslip',
-          pageBuilder: (context, state) => FadeTransitionPage<void>(
-            key: state.pageKey,
-            child: const AddPayslipScreen(),
-          ),
+          pageBuilder: (context, state) {
+            return FadeTransitionPage(
+              key: state.pageKey, // Ensure you provide a unique key
+              child: const AddPayslipScreen(), // Your target page widget
+            );
+          },
         ),
         GoRoute(
           path: '/profile',

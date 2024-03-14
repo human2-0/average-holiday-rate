@@ -215,13 +215,13 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                     labelText: 'Base pay',
                     hintText: 'Enter sum of all your basic payments',
                     filled: true,
-                    fillColor: Colors.blue[100],
+                    fillColor: Colors.blue[50],
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue[100]!),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderSide: const BorderSide(color: Colors.blue),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
@@ -244,13 +244,13 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                     hintText: 'Enter bonuses earned this month', // hintText is shown when the field is empty and not focused
                     filled: true,
                     alignLabelWithHint: true,
-                    fillColor: Colors.blue[100],
+                    fillColor: Colors.blue[50],
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue[100]!),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderSide: const BorderSide(color: Colors.blue),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
@@ -277,14 +277,15 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                   decoration: InputDecoration(
                     labelText: 'Pay rate',
                     hintText: 'Pay rate for selected month',
+                    prefix: const Text('£ '),
                     filled: true,
-                    fillColor: Colors.blue[100],
+                    fillColor: Colors.blue[50],
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue[100]!),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderSide: const BorderSide(color: Colors.blue),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),

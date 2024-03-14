@@ -16,12 +16,44 @@ class PayslipHistory extends ConsumerStatefulWidget {
 }
 
 class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
-  int currentMonthIndex = 0; // Initialize with a default value
+  late final PageController _pageController;
+  List<String> monthsList = [];
   bool isInitialLoad = true;
+
+  int _currentPageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Assume this is filled appropriately elsewhere
+    monthsList = [];
+    // This could be a place where you calculate currentMonthIndex based on your conditions
+    currentMonthIndex = max(0, monthsList.length - 1);
+    _currentPageIndex = currentMonthIndex;
+    _pageController = PageController(initialPage: _currentPageIndex);
+
+    _pageController.addListener(() {
+      final newIndex = _pageController.page!.round();
+      if (newIndex != _currentPageIndex) {
+        setState(() {
+          _currentPageIndex = newIndex;
+          // Optionally, synchronize _currentPageIndex with currentMonthIndex if needed
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   String formatMonthYear(DateTime date) {
     return DateFormat('MMMM/yyyy').format(date);
   }
+
+  int currentMonthIndex = 0;
 
   Future<void> _showEditDialog(Payslip payslip) async {
     var localPayRate = payslip.payRate.toString();
@@ -100,8 +132,6 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
 
   @override
   Widget build(BuildContext context) {
-// Ensure index stays within valid range
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -126,30 +156,9 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                         .toSet()
                         .toList();
 
-                    // Adjust initial month index to start from the last element
-                    if (isInitialLoad && monthsList.isNotEmpty) {
-                      currentMonthIndex = monthsList.length - 1;
-                      isInitialLoad =
-                          false; // Set flag to false after initial setup
-                    }
+                    // Sort monthsList if needed, e.g., by descending order to ensure the latest month comes first
 
-                    if (currentMonthIndex >= monthsList.length) {
-                      currentMonthIndex = max(
-                        0,
-                        monthsList.length - 1,
-                      ); // Adjust if out of bounds.
-                    }
-
-                    final selectedMonth = monthsList.isNotEmpty
-                        ? monthsList[currentMonthIndex]
-                        : null;
-                    final payslipsForCurrentMonth = payslips
-                        .where(
-                          (payslip) =>
-                              formatMonthYear(payslip.startDate) ==
-                              selectedMonth,
-                        )
-                        .toList();
+                    // Check for initial load to set the latest month
 
                     return Column(
                       mainAxisSize: MainAxisSize.min,
@@ -172,33 +181,35 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                               children: [
                                 // Left arrow button - moves to more recent payslips
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_left,
-                                    size: 30,
-                                  ),
-                                  onPressed: currentMonthIndex > 0
-                                      ? () => setState(
-                                            () => currentMonthIndex--,
-                                          )
+                                  icon: const Icon(Icons.arrow_left, size: 30),
+                                  onPressed: _currentPageIndex > 0
+                                      ? () async {
+                                          await _pageController.previousPage(
+                                            duration: const Duration(
+                                                milliseconds: 300,),
+                                            curve: Curves.easeInOut,
+                                          );
+                                        }
                                       : null,
                                   disabledColor: Colors.grey,
                                 ),
                                 Text(
                                   monthsList.isNotEmpty
-                                      ? ' ${monthsList[currentMonthIndex]}'
+                                      ? ' ${monthsList[_currentPageIndex]}'
                                       : 'No Data',
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_right,
-                                    size: 30,
-                                  ),
+                                  icon: const Icon(Icons.arrow_right, size: 30),
                                   onPressed:
-                                      currentMonthIndex < monthsList.length - 1
-                                          ? () => setState(
-                                                () => currentMonthIndex++,
-                                              )
+                                      _currentPageIndex < monthsList.length - 1
+                                          ? () async {
+                                              await _pageController.nextPage(
+                                                duration: const Duration(
+                                                    milliseconds: 300,),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            }
                                           : null,
                                   disabledColor: Colors.grey,
                                 ),
@@ -207,7 +218,7 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                          padding: const EdgeInsets.all(8),
                           child: Container(
                             height: MediaQuery.of(context).size.height * 0.40,
                             padding: const EdgeInsets.all(16),
@@ -220,207 +231,256 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                 bottomRight: Radius.circular(33),
                               ),
                             ),
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: payslipsForCurrentMonth.length,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              itemCount: monthsList.length,
+                              onPageChanged: (index) {
+                                // Update the state to reflect the current page index
+                                setState(() {
+                                  _currentPageIndex = index;
+                                });
+                              },
                               itemBuilder: (context, index) {
-                                final payslip = payslipsForCurrentMonth[index];
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 0, 0, 4),
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      color: Colors.lightBlue[100],
-                                    ),
-                                    child: ListTile(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                        side: BorderSide(
-                                          color: Colors.blueGrey.shade100,
+                                final selectedMonth = monthsList[index];
+                                final payslipsForCurrentMonth = payslips
+                                    .where(
+                                      (payslip) =>
+                                          formatMonthYear(payslip.startDate) ==
+                                          selectedMonth,
+                                    )
+                                    .toList();
+                                if (isInitialLoad && monthsList.isNotEmpty) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    _pageController
+                                        .jumpToPage(monthsList.length - 1);
+                                    setState(() {
+                                      isInitialLoad = false;
+                                    });
+                                  });
+                                }
+
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: payslipsForCurrentMonth.length,
+                                  itemBuilder: (context, index) {
+                                    final payslip =
+                                        payslipsForCurrentMonth[index];
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 0, 0, 4),
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          color: Colors.lightBlue[100],
+                                        ),
+                                        child: ListTile(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            side: BorderSide(
+                                              color: Colors.blueGrey.shade100,
+                                            ),
+                                          ),
+                                          tileColor: Colors.white,
+                                          leading: Icon(
+                                            Icons.access_time,
+                                            color: Colors.lightBlue[400],
+                                          ),
+                                          title: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.7,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                    Radius.circular(8),
+                                                  ),
+                                                  color: Colors.blue[50],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    'Base pay: £${formatNumbers(payslip.basePay)}',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black87,
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 4,
+                                              ),
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.7,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                    Radius.circular(8),
+                                                  ),
+                                                  color: Colors.green[100],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    'Bonuses: £${formatNumbers(payslip.bonusesEarned)}',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.green[800],
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 4,
+                                              ),
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.7,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                    Radius.circular(8),
+                                                  ),
+                                                  color: Colors.deepPurple[100],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    'Pay rate: £${formatNumbers(payslip.payRate)}',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors
+                                                          .deepPurple[900],
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          trailing: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                style: ButtonStyle(
+                                                  backgroundColor:
+                                                      MaterialStateColor
+                                                          .resolveWith(
+                                                    (states) => const Color(
+                                                      0xFFFFF59D,
+                                                    ),
+                                                  ),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.mode_edit_outline,
+                                                ),
+                                                color: Colors.yellow[800],
+                                                onPressed: () async {
+                                                  await _showEditDialog(
+                                                    payslip,
+                                                  );
+                                                },
+                                              ),
+                                              IconButton(
+                                                style: ButtonStyle(
+                                                  backgroundColor:
+                                                      MaterialStateColor
+                                                          .resolveWith(
+                                                    (states) => const Color(
+                                                      0xFFFFEBEE,
+                                                    ),
+                                                  ),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
+                                                ),
+                                                color:
+                                                    Colors.redAccent.shade200,
+                                                onPressed: () async {
+                                                  await ref
+                                                      .read(
+                                                        payslipNotifierProvider
+                                                            .notifier,
+                                                      )
+                                                      .removePayslip(
+                                                        payslip,
+                                                        index,
+                                                      );
+
+                                                  // Re-fetch the payslips to update the UI correctly.
+                                                  // This could be optimized if the provider automatically updates its listeners upon deletion.
+                                                  final updatedPayslips =
+                                                      ref.read(
+                                                    payslipNotifierProvider,
+                                                  );
+                                                  final updatedMonthsList =
+                                                      updatedPayslips
+                                                          .map(
+                                                            (payslip) =>
+                                                                formatMonthYear(
+                                                              payslip.startDate,
+                                                            ),
+                                                          )
+                                                          .toSet()
+                                                          .toList();
+
+                                                  if (currentMonthIndex >=
+                                                      updatedMonthsList
+                                                          .length) {
+                                                    currentMonthIndex = max(
+                                                      0,
+                                                      updatedMonthsList.length -
+                                                          1,
+                                                    );
+                                                  }
+
+                                                  setState(() {
+                                                    // State update to trigger UI rebuild with the updated list and index.
+                                                    isInitialLoad =
+                                                        updatedMonthsList
+                                                            .isEmpty;
+                                                  });
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback(
+                                                          (timeStamp) {
+                                                    showToast(
+                                                      context,
+                                                      'Deletion completed',
+                                                      Colors.greenAccent,
+                                                      Colors.green[900]!,
+                                                    );
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
                                         ),
                                       ),
-                                      tileColor: Colors.white,
-                                      leading: Icon(
-                                        Icons.access_time,
-                                        color: Colors.lightBlue[400],
-                                      ),
-                                      title: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.7,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                Radius.circular(8),
-                                              ),
-                                              color: Colors.blue[50],
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Base pay: £${formatNumbers(payslip.basePay)}',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black87,
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 4,
-                                          ),
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.7,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                Radius.circular(8),
-                                              ),
-                                              color: Colors.green[100],
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Bonuses: £${formatNumbers(payslip.bonusesEarned)}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green[800],
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 4,
-                                          ),
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.7,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                Radius.circular(8),
-                                              ),
-                                              color: Colors.deepPurple[100],
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Pay rate: £${formatNumbers(payslip.payRate)}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.deepPurple[900],
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            style: ButtonStyle(
-                                              backgroundColor:
-                                                  MaterialStateColor
-                                                      .resolveWith(
-                                                (states) => const Color(
-                                                  0xFFFFF59D,
-                                                ),
-                                              ),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.mode_edit_outline,
-                                            ),
-                                            color: Colors.yellow[800],
-                                            onPressed: () async {
-                                              await _showEditDialog(payslip);
-                                            },
-                                          ),
-                                          IconButton(
-                                            style: ButtonStyle(
-                                              backgroundColor:
-                                                  MaterialStateColor
-                                                      .resolveWith(
-                                                (states) => const Color(
-                                                  0xFFFFEBEE,
-                                                ),
-                                              ),
-                                            ),
-                                            icon: const Icon(
-                                                Icons.delete_outline,),
-                                            color: Colors.redAccent.shade200,
-                                            onPressed: () async {
-                                              await ref
-                                                  .read(
-                                                    payslipNotifierProvider
-                                                        .notifier,
-                                                  )
-                                                  .removePayslip(
-                                                      payslip, index,);
-
-                                              // Re-fetch the payslips to update the UI correctly.
-                                              // This could be optimized if the provider automatically updates its listeners upon deletion.
-                                              final updatedPayslips = ref.read(
-                                                  payslipNotifierProvider,);
-                                              final updatedMonthsList =
-                                                  updatedPayslips
-                                                      .map(
-                                                        (payslip) =>
-                                                            formatMonthYear(
-                                                          payslip.startDate,
-                                                        ),
-                                                      )
-                                                      .toSet()
-                                                      .toList();
-
-                                              if (currentMonthIndex >=
-                                                  updatedMonthsList.length) {
-                                                currentMonthIndex = max(
-                                                  0,
-                                                  updatedMonthsList.length - 1,
-                                                );
-                                              }
-
-                                              setState(() {
-                                                // State update to trigger UI rebuild with the updated list and index.
-                                                isInitialLoad =
-                                                    updatedMonthsList.isEmpty;
-                                              });
-                                              WidgetsBinding.instance
-                                                  .addPostFrameCallback(
-                                                      (timeStamp) {
-                                                showToast(
-                                                  context,
-                                                  'Deletion completed',
-                                                  Colors.greenAccent,
-                                                  Colors.green[900]!,
-                                                );
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 );
                               },
                             ),
