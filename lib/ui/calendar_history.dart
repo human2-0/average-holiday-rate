@@ -186,7 +186,7 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                       ? () async {
                                           await _pageController.previousPage(
                                             duration: const Duration(
-                                                milliseconds: 300,),
+                                                milliseconds: 200,),
                                             curve: Curves.easeInOut,
                                           );
                                         }

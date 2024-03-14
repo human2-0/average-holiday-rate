@@ -172,6 +172,8 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                       ? Row(
                           children: [
                             IconButton(
+                              iconSize: 30,
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => const Color(0xFFBBDEFB))),
                               icon: const Icon(Icons.arrow_left),
                               onPressed: () {
                                 setState(() {
@@ -181,7 +183,10 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                                 });
                               },
                             ),
+                            const SizedBox(width: 32,),
                             IconButton(
+                              iconSize: 30,
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => const Color(0xFFBBDEFB))),
                               icon: const Icon(Icons.arrow_right),
                               onPressed: () {
                                 setState(() {
@@ -224,6 +229,10 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                       borderSide: const BorderSide(color: Colors.blue),
                       borderRadius: BorderRadius.circular(30),
                     ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.red),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   keyboardType: TextInputType.number,
                   onSaved: (value) {
@@ -251,6 +260,10 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.red),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
@@ -286,6 +299,10 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.red),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
