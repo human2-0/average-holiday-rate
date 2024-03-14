@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class ToastWidget extends StatefulWidget {
-  const ToastWidget({required this.message, super.key});
+  const ToastWidget({required this.message, required this.backgroundColor,
+  required this.textColor,required this.icon, super.key,});
   final String message;
+final Color backgroundColor;
+final Color textColor;
+  final IconData icon;
+
 
   @override
   _ToastWidgetState createState() => _ToastWidgetState();
@@ -19,7 +23,7 @@ class _ToastWidgetState extends State<ToastWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300,),
     );
     _opacityAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
 
@@ -30,9 +34,6 @@ class _ToastWidgetState extends State<ToastWidget>
     Future.delayed(const Duration(seconds: 2), () async {
       if (mounted && !_controller.isDisposed) {
         await _reverseAnimation(); // Reverse the animation
-        if (mounted) {
-          context.pop();
-        }
       }
     });
   }
@@ -64,11 +65,19 @@ class _ToastWidgetState extends State<ToastWidget>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(25),
-            color: Colors.black.withOpacity(0.7),
+            color: widget.backgroundColor,
           ),
-          child: Text(
-            widget.message,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.icon,),
+              const SizedBox(width: 4),
+              Text(
+                widget.message,
+                style: TextStyle(color: widget.textColor, fontSize: 16),
+              ),
+            ],
           ),
         ),
       ),
@@ -76,20 +85,20 @@ class _ToastWidgetState extends State<ToastWidget>
   }
 }
 
-void showToast(BuildContext context, String message) {
+void showToast(BuildContext context, String message, Color backgroundColor, Color textColor,  {IconData icon = Icons.done_outline_rounded}) {
   final overlay = Overlay.of(context);
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
-      bottom: 50,
+      bottom: 100, // Adjust this value to control the vertical positioning
       left: MediaQuery.of(context).size.width * 0.1,
-      child: ToastWidget(message: message),
+      right: MediaQuery.of(context).size.width * 0.1,
+      child: Center(child: ToastWidget(message: message, backgroundColor: backgroundColor, textColor: textColor, icon: icon,)),
     ),
   );
 
   overlay?.insert(overlayEntry);
 
-  // Don't remove the overlay entry immediately
-  // It will be removed automatically after reversing the animation
+  Future.delayed(const Duration(seconds: 3), overlayEntry.remove);
 }
 
 extension AnimationControllerExtension on AnimationController {

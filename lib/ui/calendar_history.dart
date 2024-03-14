@@ -1,8 +1,12 @@
 import 'dart:math';
 
-import 'package:average_holiday_rate_pay/providers/payslip.dart';
+import 'package:average_holiday_rate_pay/customs/toast_widget.dart';
+import 'package:average_holiday_rate_pay/models/payslip_model.dart';
+import 'package:average_holiday_rate_pay/providers/payslip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class PayslipHistory extends ConsumerStatefulWidget {
   const PayslipHistory({super.key});
@@ -15,8 +19,84 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
   int currentMonthIndex = 0; // Initialize with a default value
   bool isInitialLoad = true;
 
-  String formatMonthYear(DateTime date) =>
-      "${date.month.toString().padLeft(2, '0')}/${date.year}";
+  String formatMonthYear(DateTime date) {
+    return DateFormat('MMMM/yyyy').format(date);
+  }
+
+  Future<void> _showEditDialog(Payslip payslip) async {
+    var localPayRate = payslip.payRate.toString();
+    var localBasePay = payslip.basePay.toString();
+    var localBonusEarned = payslip.bonusesEarned.toString();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button to close the dialog
+      builder: (context) => AlertDialog(
+        title: const Text('Edit payslip'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              TextFormField(
+                initialValue: localBasePay,
+                decoration:
+                    const InputDecoration(labelText: 'Contracted hours'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) => localBasePay = value,
+              ),
+              TextFormField(
+                initialValue: localBonusEarned,
+                decoration: const InputDecoration(labelText: 'Bonus earned'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) => localBonusEarned = value,
+              ),
+              TextFormField(
+                initialValue: localPayRate,
+                decoration: const InputDecoration(labelText: 'Pay rate'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) => localPayRate = value,
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Save'),
+            onPressed: () async {
+              // Use local variables to update settings
+              final payRate = double.tryParse(localPayRate) ?? 0;
+              final basePay = double.tryParse(localBasePay) ?? 0;
+              final bonusesEarned = double.tryParse(localBonusEarned) ?? 0;
+              final updatedPayslip = payslip.copyWith(
+                basePay: basePay,
+                payRate: payRate,
+                bonusesEarned: bonusesEarned,
+              );
+              await ref
+                  .read(payslipNotifierProvider.notifier)
+                  .editPayslip(updatedPayslip);
+
+              await Future.microtask(
+                () => showToast(
+                  context,
+                  'Edited successfully',
+                  Colors.greenAccent[100]!,
+                  Colors.green[900]!,
+                  icon: Icons.edit,
+                ),
+              );
+
+              await Future.microtask(() => context.pop());
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +131,13 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                       currentMonthIndex = monthsList.length - 1;
                       isInitialLoad =
                           false; // Set flag to false after initial setup
+                    }
+
+                    if (currentMonthIndex >= monthsList.length) {
+                      currentMonthIndex = max(
+                        0,
+                        monthsList.length - 1,
+                      ); // Adjust if out of bounds.
                     }
 
                     final selectedMonth = monthsList.isNotEmpty
@@ -98,7 +185,7 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                 ),
                                 Text(
                                   monthsList.isNotEmpty
-                                      ? monthsList[currentMonthIndex]
+                                      ? ' ${monthsList[currentMonthIndex]}'
                                       : 'No Data',
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
@@ -138,59 +225,201 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                               itemCount: payslipsForCurrentMonth.length,
                               itemBuilder: (context, index) {
                                 final payslip = payslipsForCurrentMonth[index];
-                                return DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: Colors.lightBlue[100],
-                                  ),
-                                  child: ListTile(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      side: BorderSide(
-                                          color: Colors.blueGrey.shade100,),
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(0, 0, 0, 4),
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: Colors.lightBlue[100],
                                     ),
-                                    tileColor: Colors.white,
-                                    title: Text(
-                                      ' Hours: ${payslip.hoursWorked}\n Bonuses: ${payslip.bonusesEarned}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
+                                    child: ListTile(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                        side: BorderSide(
+                                          color: Colors.blueGrey.shade100,
+                                        ),
                                       ),
-                                    ),
-                                    leading: Icon(Icons.access_time,
-                                        color: Colors.lightBlue[400],),
-                                    trailing: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(33),
-                                            color: Colors.red[50],),
-                                        child: IconButton(
-                                          icon:
-                                              const Icon(Icons.delete_outline),
-                                          color: Colors.redAccent.shade200,
-                                          onPressed: () async {
-                                            await ref.read(payslipNotifierProvider.notifier).removePayslip(payslip, index);
+                                      tileColor: Colors.white,
+                                      leading: Icon(
+                                        Icons.access_time,
+                                        color: Colors.lightBlue[400],
+                                      ),
+                                      title: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.7,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                              color: Colors.blue[50],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Base pay: £${formatNumbers(payslip.basePay)}',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.7,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                              color: Colors.green[100],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Bonuses: £${formatNumbers(payslip.bonusesEarned)}',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green[800],
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.7,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                              color: Colors.deepPurple[100],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Pay rate: £${formatNumbers(payslip.payRate)}',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.deepPurple[900],
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateColor
+                                                      .resolveWith(
+                                                (states) => const Color(
+                                                  0xFFFFF59D,
+                                                ),
+                                              ),
+                                            ),
+                                            icon: const Icon(
+                                              Icons.mode_edit_outline,
+                                            ),
+                                            color: Colors.yellow[800],
+                                            onPressed: () async {
+                                              await _showEditDialog(payslip);
+                                            },
+                                          ),
+                                          IconButton(
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateColor
+                                                      .resolveWith(
+                                                (states) => const Color(
+                                                  0xFFFFEBEE,
+                                                ),
+                                              ),
+                                            ),
+                                            icon: const Icon(
+                                                Icons.delete_outline,),
+                                            color: Colors.redAccent.shade200,
+                                            onPressed: () async {
+                                              await ref
+                                                  .read(
+                                                    payslipNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .removePayslip(
+                                                      payslip, index,);
 
-                                            // After deletion, update UI accordingly
-                                            setState(() {
-                                              final payslips = ref.watch(payslipNotifierProvider); // Re-fetch the payslips
-                                              final monthsList = payslips
-                                                  .map((payslip) => formatMonthYear(payslip.startDate))
-                                                  .toSet()
-                                                  .toList();
+                                              // Re-fetch the payslips to update the UI correctly.
+                                              // This could be optimized if the provider automatically updates its listeners upon deletion.
+                                              final updatedPayslips = ref.read(
+                                                  payslipNotifierProvider,);
+                                              final updatedMonthsList =
+                                                  updatedPayslips
+                                                      .map(
+                                                        (payslip) =>
+                                                            formatMonthYear(
+                                                          payslip.startDate,
+                                                        ),
+                                                      )
+                                                      .toSet()
+                                                      .toList();
 
-                                              // Check if the currentMonthIndex is now out of bounds
-                                              if (currentMonthIndex >= monthsList.length) {
-                                                currentMonthIndex = max(0, monthsList.length - 1); // Adjust index or reset to 0 if list is empty
+                                              if (currentMonthIndex >=
+                                                  updatedMonthsList.length) {
+                                                currentMonthIndex = max(
+                                                  0,
+                                                  updatedMonthsList.length - 1,
+                                                );
                                               }
 
-                                              // This will also handle the isInitialLoad reset if necessary
-                                              isInitialLoad = monthsList.isEmpty;
-                                            });
-                                          },
-                                        ),),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10,),
+                                              setState(() {
+                                                // State update to trigger UI rebuild with the updated list and index.
+                                                isInitialLoad =
+                                                    updatedMonthsList.isEmpty;
+                                              });
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback(
+                                                      (timeStamp) {
+                                                showToast(
+                                                  context,
+                                                  'Deletion completed',
+                                                  Colors.greenAccent,
+                                                  Colors.green[900]!,
+                                                );
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
                                   ),
                                 );
                               },
@@ -207,5 +436,17 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
         ),
       ],
     );
+  }
+}
+
+String formatNumbers(double number) {
+  // Check if the number is an integer
+  if (number == number.toInt()) {
+    // If it is, return it as an integer string
+    return number.toInt().toString();
+  } else {
+    // If it's not, return it as a double with one decimal place
+    // Only if needed, otherwise return the original double converted to string
+    return number.toStringAsFixed(1).replaceAll('.0', '');
   }
 }

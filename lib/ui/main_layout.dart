@@ -1,4 +1,3 @@
-import 'package:average_holiday_rate_pay/customs/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,12 +10,10 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  final paymentsHistory = ['First month', 'Second month'];
   int currentMonthIndex = 0; // To track the current month
 
   @override
   Widget build(BuildContext context) {
-    CustomToast.initialize(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(

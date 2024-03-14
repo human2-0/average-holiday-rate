@@ -1,9 +1,9 @@
-import 'package:average_holiday_rate_pay/models/settings.dart';
+import 'package:average_holiday_rate_pay/repository/settings_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:hive/hive.dart';
 
 class AuthenticationRepository {
+  final SettingsRepository _settingsRepository = SettingsRepository();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
@@ -17,7 +17,7 @@ class AuthenticationRepository {
     UserCredential userCredential,
   ) async {
     if (userCredential.user != null) {
-      await createOrUpdateUserSettings(userCredential.user!.uid);
+      await _settingsRepository.createOrUpdateUserSettings(userCredential.user!.uid);
     }
   }
 
@@ -69,22 +69,6 @@ class AuthenticationRepository {
     final credential =
         EmailAuthProvider.credential(email: email, password: password);
     return _firebaseAuth.currentUser!.linkWithCredential(credential);
-  }
-
-  Future<void> createOrUpdateUserSettings(String userId,
-      {Settings? newSettings,}) async {
-    final settingsBox = await Hive.openBox<Settings>('settings');
-
-    final settingsToSave =
-        newSettings ?? Settings(contractedHours: 0, payRate: 0);
-    // Perform the creation or update
-    await settingsBox.put(userId, settingsToSave);
-  }
-
-  Future<Settings> getUserSettings(String userId) async {
-    final settingsBox = await Hive.openBox<Settings>('settings');
-    return settingsBox.get(userId,
-        defaultValue: Settings(payRate: 0, contractedHours: 0),)!;
   }
 
   // Sign out

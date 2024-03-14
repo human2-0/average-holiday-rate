@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'settings.g.dart'; // Hive generator
+part 'settings_model.g.dart'; // Hive generator
 
 @HiveType(typeId: 1) // Ensure typeId is unique if you have other Hive types
 class Settings extends HiveObject {

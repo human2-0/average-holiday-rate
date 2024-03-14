@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:average_holiday_rate_pay/providers/holiday_rate.dart';
+import 'package:average_holiday_rate_pay/providers/holiday_rate_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +31,7 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
 
   void moveViewport(int direction) {
     final historicalRatesMap =
-        ref.read(holidayRateNotifierProvider).historicalHolidayRates ?? {};
+        ref.watch(holidayRateNotifierProvider).historicalHolidayRates ?? {};
     final maxIndex = historicalRatesMap.length - viewportSize;
     startIndex += direction;
     if (startIndex < 0) {
@@ -107,8 +107,8 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
     for (var i = 0; i < sortedKeys.length; i++) {
       final key = sortedKeys[i];
       final rate = historicalRates[key];
-      if (rate != null) {
-        // Round the rate to 2 decimal places
+      if (rate != null && rate.isFinite) {
+        // Ensure rate is finite
         final roundedRate = double.parse(rate.toStringAsFixed(2));
         spots.add(FlSpot(i.toDouble(), roundedRate));
       }
@@ -123,7 +123,7 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
     const style = TextStyle(
       color: Color(0xff68737d),
       fontWeight: FontWeight.bold,
-      fontSize: 16,
+      fontSize: 15,
     );
 
     var text = '';
@@ -131,8 +131,8 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
       final dateString = sortedKeys[value.toInt()];
       // Parse the dateString to a DateTime object
       final date = DateFormat('yyyy-MM').parse(dateString);
-      // Format the date into "YY/MM"
-      text = DateFormat('yy/MM').format(date);
+      // Format the date into "MMM/yy", which is the three first letters of the month name followed by the last two digits of the year
+      text = DateFormat('MMM/yy').format(date);
     }
 
     return SideTitleWidget(
@@ -141,28 +141,40 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
     );
   }
 
+
   LineChartData mainData() {
     final historicalRatesMap =
         ref.watch(holidayRateNotifierProvider).historicalHolidayRates ?? {};
     final spots = getSpotsFromRates(historicalRatesMap);
 
-    // Check if spots is empty and provide default values if so
     var minY = 0.0;
     var maxY = 100.0;
-
     if (spots.isNotEmpty) {
       minY = spots.map((spot) => spot.y).reduce(min);
       maxY = spots.map((spot) => spot.y).reduce(max);
     }
 
-    // Adjust these to reduce the Y-axis range, depending on how tight you want it
-    const paddingFactor = 2; // Adjust this padding factor as needed
+    // Ensure minY and maxY are finite
+    minY = minY.isFinite ? minY : 0.0;
+    maxY = maxY.isFinite ? maxY : 100.0;
+
+    // Add diagnostic print statements
+
+    // Calculate rangePadding safely
+    const paddingFactor = 2;
     final rangePadding = (maxY - minY) * paddingFactor;
 
-    // Adjust minX and maxX based on the viewport, similar to the previous solution
     final minX = startIndex.toDouble();
     var maxX = (startIndex + viewportSize).toDouble();
     maxX = maxX > spots.length ? spots.length.toDouble() : maxX;
+
+    // Confirm minX, maxX, minY - rangePadding, maxY + rangePadding are finite
+    if (!minX.isFinite ||
+        !maxX.isFinite ||
+        !(minY - rangePadding).isFinite ||
+        !(maxY + rangePadding).isFinite) {
+      // Consider setting default values or handling the error as appropriate
+    }
 
     return LineChartData(
       gridData: FlGridData(

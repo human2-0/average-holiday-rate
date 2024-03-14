@@ -1,35 +1,44 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'settings.dart';
+part of 'payslip_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class SettingsAdapter extends TypeAdapter<Settings> {
+class PayslipAdapter extends TypeAdapter<Payslip> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  Settings read(BinaryReader reader) {
+  Payslip read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Settings(
-      payRate: fields[0] as double,
-      contractedHours: fields[1] as double,
+    return Payslip(
+      startDate: fields[0] as DateTime,
+      endDate: fields[1] as DateTime,
+      basePay: fields[2] as double,
+      bonusesEarned: fields[3] as double,
+      payRate: fields[4] as double,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Settings obj) {
+  void write(BinaryWriter writer, Payslip obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(5)
       ..writeByte(0)
-      ..write(obj.payRate)
+      ..write(obj.startDate)
       ..writeByte(1)
-      ..write(obj.contractedHours);
+      ..write(obj.endDate)
+      ..writeByte(2)
+      ..write(obj.basePay)
+      ..writeByte(3)
+      ..write(obj.bonusesEarned)
+      ..writeByte(4)
+      ..write(obj.payRate);
   }
 
   @override
@@ -38,7 +47,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SettingsAdapter &&
+      other is PayslipAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

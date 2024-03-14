@@ -1,5 +1,5 @@
-import 'package:average_holiday_rate_pay/models/payslip.dart';
-import 'package:average_holiday_rate_pay/repository/payslip.dart';
+import 'package:average_holiday_rate_pay/models/payslip_model.dart';
+import 'package:average_holiday_rate_pay/repository/payslip_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,6 +40,20 @@ class PayslipNotifier extends StateNotifier<List<Payslip>> {
       // Handle any errors here
       if (kDebugMode) {
         print('Error adding payslip: $e');
+      }
+    }
+  }
+
+  Future<void> editPayslip(Payslip updatedPayslip) async {
+    try {
+      await repository.editPayslip(updatedPayslip);
+      // After successfully editing, fetch the updated list to refresh the state
+      final updatedPayslips = await repository.getPayslips();
+      state = updatedPayslips;
+    } on FormatException catch (e) {
+      // Handle any errors here
+      if (kDebugMode) {
+        print('Error editing payslip: $e');
       }
     }
   }

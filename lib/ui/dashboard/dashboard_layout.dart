@@ -1,18 +1,24 @@
-import 'package:average_holiday_rate_pay/providers/holiday_rate.dart';
+import 'package:average_holiday_rate_pay/providers/holiday_rate_provider.dart';
 import 'package:average_holiday_rate_pay/ui/dashboard/historical_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardChartsScreen extends ConsumerWidget {
+class DashboardChartsScreen extends ConsumerStatefulWidget {
   const DashboardChartsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Future.microtask(
-      () async => ref
-          .read(holidayRateNotifierProvider.notifier)
-          .calculateAverageHolidayRate(),
-    );
+  ConsumerState<DashboardChartsScreen> createState() =>
+      _DashboardChartsScreenState();
+}
+
+class _DashboardChartsScreenState extends ConsumerState<DashboardChartsScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     Future.microtask(
       () async => ref
           .read(holidayRateNotifierProvider.notifier)
@@ -53,7 +59,10 @@ class DashboardChartsScreen extends ConsumerWidget {
                         builder: (context, ref, child) {
                           final holidayRate = ref
                               .watch(holidayRateNotifierProvider)
-                              .holidayRate;
+                              .historicalHolidayRates
+                              ?.values
+                              .first
+                              .toStringAsFixed(2);
                           return Text('£$holidayRate');
                         },
                       ),

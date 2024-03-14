@@ -1,10 +1,11 @@
-import 'package:average_holiday_rate_pay/customs/toast.dart';
-import 'package:average_holiday_rate_pay/models/settings.dart';
-import 'package:average_holiday_rate_pay/providers/auth.dart';
+import 'package:average_holiday_rate_pay/customs/toast_widget.dart';
+import 'package:average_holiday_rate_pay/models/settings_model.dart';
+import 'package:average_holiday_rate_pay/providers/auth_provider.dart';
+import 'package:average_holiday_rate_pay/providers/settings_provider.dart';
 import 'package:average_holiday_rate_pay/ui/profile/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -16,15 +17,12 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileState extends ConsumerState<ProfileScreen> {
   late TextEditingController _payRateController;
   late TextEditingController _contractedHoursController;
-  late FToast fToast;
 
   @override
   void initState() {
     super.initState();
     _payRateController = TextEditingController();
     _contractedHoursController = TextEditingController();
-    fToast = FToast();
-    fToast.init(context);
   }
 
   @override
@@ -35,8 +33,8 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _showEditDialog(String user, Settings settings) async {
-    _payRateController.text = settings.payRate.toString();
-    _contractedHoursController.text = settings.contractedHours.toString();
+    var localPayRate = settings.payRate.toString();
+    var localContractedHours = settings.contractedHours.toString();
 
     return showDialog<void>(
       context: context,
@@ -47,15 +45,17 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
           child: ListBody(
             children: <Widget>[
               TextFormField(
-                controller: _payRateController,
+                initialValue: localPayRate,
                 decoration: const InputDecoration(labelText: 'Pay Rate'),
                 keyboardType: TextInputType.number,
+                onChanged: (value) => localPayRate = value,
               ),
               TextFormField(
-                controller: _contractedHoursController,
+                initialValue: localContractedHours,
                 decoration:
                     const InputDecoration(labelText: 'Contracted Hours'),
                 keyboardType: TextInputType.number,
+                onChanged: (value) => localContractedHours = value,
               ),
             ],
           ),
@@ -70,26 +70,23 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
           TextButton(
             child: const Text('Save'),
             onPressed: () async {
-              final payRate = double.tryParse(_payRateController.text) ?? 0;
+              // Use local variables to update settings
+              final payRate = double.tryParse(localPayRate) ?? 0;
               final contractedHours =
-                  double.tryParse(_contractedHoursController.text) ?? 0;
+                  double.tryParse(localContractedHours) ?? 0;
 
-              // Create a new Settings object with updated values
               final newSettings =
                   Settings(payRate: payRate, contractedHours: contractedHours);
 
-              // Call updateUserSettings on the notifier to update the settings
               await ref
                   .read(userSettingsProvider(user).notifier)
                   .updateUserSettings(user, newSettings);
 
-              if (mounted) {
-                Navigator.of(context).pop();
-                CustomToast( 'Settings updated',
-                  const Icon(Icons.done_outline_rounded), Colors.greenAccent,)
-                    .showCustomToast();
-              }
+              await Future.microtask(() => showToast(context, 'Edited successfully',
+                Colors.greenAccent[100]!,
+                Colors.green[900]!,),);
 
+              await Future.microtask(() => context.pop());
             },
           ),
         ],
@@ -130,36 +127,40 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
                       MainAxisSize.min, // Makes the card wrap its content
                   children: [
                     CircleAvatar(
-                      backgroundImage: NetworkImage(user.photoURL ??
-                          'default_avatar_url',), // Use user's photoURL for the avatar
                       radius: 40, // Size of the avatar
+                      backgroundImage: user.photoURL != null
+                          ? NetworkImage(user.photoURL!)
+                          : const AssetImage('assets/default_avatar.png') as ImageProvider, // Use AssetImage when photoURL is null
                     ),
                     const SizedBox(
-                        height: 16,), // Adds spacing between avatar and text
+                      height: 16,
+                    ), // Adds spacing between avatar and text
                     Text(
                       'Welcome, ${user.displayName ?? user.email ?? 'User'}',
                       style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight:
-                              FontWeight.bold,), // Makes text larger and bold
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ), // Makes text larger and bold
                     ),
                     const SizedBox(height: 8), // Adds spacing between texts
                     Text(
                       'Email: ${user.email ?? 'N/A'}',
                       style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontWeight:
-                              FontWeight.bold,), // Grey color for less emphasis
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                      ), // Grey color for less emphasis
                     ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Pay Rate:'),
-                        Text('£${settings.payRate.toStringAsFixed(2)} /hr',
-                            style: const TextStyle(
-                                fontWeight: FontWeight
-                                    .bold,),), // Formats pay rate to 2 decimal places
+                        Text(
+                          '£${settings.payRate.toStringAsFixed(2)} /hr',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ), // Formats pay rate to 2 decimal places
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -167,17 +168,20 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Contracted Hours:'),
-                        Text('${settings.contractedHours} hours/week',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold),),
+                        Text(
+                          '${settings.contractedHours} hours/week',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                     const SizedBox(
-                        height: 16,), // Adds spacing before the button
+                      height: 16,
+                    ), // Adds spacing before the button
                     Align(
                       alignment: Alignment.centerRight,
                       child: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => const Color(0xFFBBDEFB))),
+                        icon: Icon(Icons.edit, color: Colors.blue[800]),
                         onPressed: () async =>
                             _showEditDialog(user.uid, settings),
                       ),
@@ -198,27 +202,17 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 0, 8, 0),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  color: Colors.lightBlue[100],
-                ),
                 child: IconButton(
-                  icon: const Icon(Icons.logout),
+                  style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => const Color(0xFFBBDEFB))),
+                  icon: Icon(Icons.logout, color: Colors.blue[900],),
                   onPressed: () async {
                     await ref
                         .read(authStateNotifierProvider.notifier)
                         .signOut();
-                    if (mounted){
-                      CustomToast('You have been logged out',
-                        const Icon(Icons.flight_takeoff), Colors.greenAccent[100]!,)
-                          .showCustomToast();
-                    }
                     // Navigate to login screen or home screen as needed after sign out
                   },
                 ),
               ),
-            ),
           ],
         ),
         body: Center(

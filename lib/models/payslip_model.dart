@@ -1,15 +1,17 @@
 import 'package:hive/hive.dart';
 
-part 'payslip.g.dart'; // Hive generator
+part 'payslip_model.g.dart'; // Hive generator
 
 @HiveType(typeId: 0)
-class Payslip extends HiveObject { // Total bonuses earned in the pay period
+class Payslip extends HiveObject {
+  // Total bonuses earned in the pay period
 
   Payslip({
     required this.startDate,
     required this.endDate,
-    required this.hoursWorked,
+    required this.basePay,
     required this.bonusesEarned,
+    required this.payRate,
   }) {
     if (endDate.isBefore(startDate)) {
       throw ArgumentError('endDate cannot be before startDate');
@@ -22,10 +24,13 @@ class Payslip extends HiveObject { // Total bonuses earned in the pay period
   DateTime endDate; // End of the pay period
 
   @HiveField(2)
-  double hoursWorked; // Total hours worked in the pay period
+  double basePay; // Total hours worked in the pay period
 
   @HiveField(3)
   double bonusesEarned;
+
+  @HiveField(4)
+  double payRate;
 
   // Optionally, you can add a method to determine if the payslip is weekly or monthly
   String get periodType {
@@ -35,5 +40,21 @@ class Payslip extends HiveObject { // Total bonuses earned in the pay period
     } else {
       return 'Monthly';
     }
+  }
+
+  Payslip copyWith({
+    DateTime? startDate,
+    DateTime? endDate,
+    double? basePay,
+    double? bonusesEarned,
+    double? payRate,
+  }) {
+    return Payslip(
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      basePay: basePay ?? this.basePay,
+      bonusesEarned: bonusesEarned ?? this.bonusesEarned,
+      payRate: payRate ?? this.payRate,
+    );
   }
 }

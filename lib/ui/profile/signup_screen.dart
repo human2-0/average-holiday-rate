@@ -1,4 +1,4 @@
-import 'package:average_holiday_rate_pay/providers/auth.dart';
+import 'package:average_holiday_rate_pay/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,7 +103,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     _formKey.currentState!.save();
                     try {
                       await ref.read(authStateNotifierProvider.notifier)
-                          .linkCredentialsWithGoogle(_emailController.text, _passwordController.text);
+                          .signUpWithEmailAndPassword(_emailController.text, _passwordController.text);
                       // Navigate to the next screen after successful signup and linking
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'email-already-in-use') {

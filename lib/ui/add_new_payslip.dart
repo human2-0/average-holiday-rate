@@ -1,11 +1,11 @@
-import 'package:average_holiday_rate_pay/customs/toast.dart';
-import 'package:average_holiday_rate_pay/models/payslip.dart';
-import 'package:average_holiday_rate_pay/providers/auth.dart';
-import 'package:average_holiday_rate_pay/providers/payslip.dart';
+import 'package:average_holiday_rate_pay/customs/toast_widget.dart';
+import 'package:average_holiday_rate_pay/models/payslip_model.dart';
+import 'package:average_holiday_rate_pay/providers/auth_provider.dart';
+import 'package:average_holiday_rate_pay/providers/payslip_provider.dart';
+import 'package:average_holiday_rate_pay/providers/settings_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class AddPayslipScreen extends ConsumerStatefulWidget {
@@ -19,8 +19,9 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _startDate;
   DateTime? _endDate;
-  double? _hoursWorked;
+  double? _basePay;
   double? _bonusesEarned;
+  double? _payRate;
   late PickerDateRange _selectedRange = PickerDateRange(
     DateTime.now(),
     DateTime.now(),
@@ -30,7 +31,6 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
       DateRangePickerController();
 
   Key _pickerKey = UniqueKey();
-  late FToast fToast;
 
   void _updateControllerAndView(DateRangePickerView newViewType) {
     setState(() {
@@ -68,67 +68,71 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
     }
   }
 
-
-
-  Future<void> _addPayslip() async {
+  Future<void> _addPayslip(BuildContext currentContext) async {
     // Ensure that start and end dates are set
     if (_startDate == null || _endDate == null) {
-      CustomToast('Please select the date range',
-        const Icon(Icons.error_outlined), Colors.red[100]!,)
-          .showCustomToast();
-      return;
-    }
-
-    // Ensure hours worked and bonuses are set
-    if (_hoursWorked == null || _bonusesEarned == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields correctly')),
+      showToast(
+        currentContext,
+        'Please, select the date.',
+        Colors.yellow[100]!,
+        Colors.yellow[900]!,
       );
-      return;
-    }
-
-    final userId = ref.read(authStateNotifierProvider)?.uid;
-
-    // Ensure that the user is logged in (i.e., userId is not null)
-    if (userId == null || userId.isEmpty) {
-      CustomToast('Please sign in or create an account',
-        const Icon(Icons.insert_emoticon_outlined), Colors.yellowAccent,)
-          .showCustomToast();
-      return;
     }
 
     // Create a new Payslip with the selected dates and entered values
     final newPayslip = Payslip(
       startDate: _startDate!,
       endDate: _endDate!,
-      hoursWorked: _hoursWorked!,
+      basePay: _basePay!,
       bonusesEarned: _bonusesEarned!,
+      payRate: _payRate!,
     );
 
     // Add the Payslip and handle the response
     try {
       await ref.read(payslipNotifierProvider.notifier).addPayslip(newPayslip);
-      if (mounted) {
-        CustomToast('Payslip added successfully', const Icon(Icons.done_outline_rounded), Colors.greenAccent)
-            .showCustomToast();
-      }
     } on FormatException catch (error) {
-      if (mounted) {
-        CustomToast('Error adding payslip: ${error.message}',
-          const Icon(Icons.error_outlined), Colors.red[400]!,)
-            .showCustomToast();
-      }
+      debugPrint(error.message);
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      showToast(
+        context,
+        'The payslip has been added.',
+        Colors.greenAccent[100]!,
+        Colors.green[900]!,
+      );
+    });
   }
 
-
-
   @override
-  Widget build(BuildContext context)  {
+  Widget build(BuildContext context) {
+    final userId = ref.watch(authStateNotifierProvider)?.uid;
 
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Add payslip'),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20), // Adjust the radius as needed
+              bottomRight: Radius.circular(20), // Adjust the radius as needed
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter, // Gradient starts at the top
+              end: Alignment.bottomCenter, // And ends at the bottom
+              colors: [
+                Colors.blue[50]!, // Lighter blue at the top
+                Colors.blue[100]!, // Darker blue towards the bottom
+              ],
+            ),
+          ),
+        ),
+        title: Text(
+          'Add new payslip',
+          style: TextStyle(color: Colors.blueGrey.shade900),
+        ),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.blue[900], size: 32),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -207,22 +211,48 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                 ),
                 // Hours Worked Input
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Hours Worked'),
+                  decoration: InputDecoration(
+                    labelText: 'Base pay',
+                    hintText: 'Enter sum of all your basic payments',
+                    filled: true,
+                    fillColor: Colors.blue[100],
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue[100]!),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                   keyboardType: TextInputType.number,
                   onSaved: (value) {
-                    _hoursWorked = double.tryParse(value ?? '');
+                    _basePay = double.tryParse(value ?? '');
                   },
                   validator: (value) {
                     if (value == null || double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
+                      return 'Please enter any amount above 0.';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 8,),
                 // Bonuses Earned Input
                 TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Bonuses Earned',
+                  decoration: InputDecoration(
+                    labelText: 'Bonuses earned', // Use labelText to enable floating label behavior
+                    hintText: 'Enter bonuses earned this month', // hintText is shown when the field is empty and not focused
+                    filled: true,
+                    alignLabelWithHint: true,
+                    fillColor: Colors.blue[100],
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue[100]!),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   keyboardType: TextInputType.number,
                   onSaved: (value) {
@@ -230,7 +260,43 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                   },
                   validator: (value) {
                     if (value == null || double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
+                      return 'Please enter any amount above 0.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8,),
+                TextFormField(
+                  controller: TextEditingController(
+                    text: ref
+                        .read(userSettingsProvider(userId!))
+                        .settings
+                        ?.payRate
+                        .toString(),
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Pay rate',
+                    hintText: 'Pay rate for selected month',
+                    filled: true,
+                    fillColor: Colors.blue[100],
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue[100]!),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue.shade900),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onSaved: (value) {
+                    _payRate = double.tryParse(value ?? '1');
+                  },
+                  validator: (value) {
+                    if (value == null ||
+                        double.tryParse(value) == null ||
+                        double.tryParse(value) == 0) {
+                      return 'Please enter a number bigger than 0.';
                     }
                     return null;
                   },
@@ -242,7 +308,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      await _addPayslip();
+                      await _addPayslip(context);
                     }
                   },
                 ),
@@ -251,10 +317,17 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
           ),
         ),
       ),
-    );}
+    );
+  }
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<DateRangePickerView>('dateSelectionType', dateSelectionType));
+    properties.add(
+      EnumProperty<DateRangePickerView>(
+        'dateSelectionType',
+        dateSelectionType,
+      ),
+    );
   }
 }

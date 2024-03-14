@@ -1,5 +1,5 @@
-import 'package:average_holiday_rate_pay/customs/toast.dart';
-import 'package:average_holiday_rate_pay/providers/auth.dart';
+
+import 'package:average_holiday_rate_pay/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
@@ -98,14 +98,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Handle successful sign in
                 } on FormatException catch (error) {
                   // Handle errors
-                  if (mounted) {
-                    CustomToast(
-
-                      'Login failed ${error.message}',
-                      const Icon(Icons.done_outline_rounded),
-                      Colors.red[400]!,
-                    ).showCustomToast();
-                  }
                 }
               },
             ),
@@ -114,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Other sign-in options
             TextButton(
               onPressed: () async {
-                await context.push('/signup');
+                context.go('/signup');
               },
               child: const Text("Don't have an account? Sign up"),
             ),
