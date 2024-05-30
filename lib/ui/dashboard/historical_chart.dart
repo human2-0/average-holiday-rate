@@ -53,6 +53,11 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
         });
       }
     });
+
+    final historicalRatesMap =
+        ref.watch(holidayRateNotifierProvider).historicalHolidayRates ?? {};
+    final spots = getSpotsFromRates(historicalRatesMap);
+
     return Stack(
       children: <Widget>[
         AspectRatio(
@@ -97,6 +102,8 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
             ),
           ],
         ),
+       if (spots.isEmpty)const Positioned(
+           bottom: 150 , left: 50,child: Text('Please, add at least 12 payslips to your account.'),),
       ],
     );
   }
@@ -175,6 +182,8 @@ class _LineChartSample2State extends ConsumerState<LineChartSample2> {
         !(maxY + rangePadding).isFinite) {
       // Consider setting default values or handling the error as appropriate
     }
+
+
 
     return LineChartData(
       gridData: FlGridData(

@@ -12,6 +12,7 @@ class Payslip extends HiveObject {
     required this.basePay,
     required this.bonusesEarned,
     required this.payRate,
+    this.deductions,
   }) {
     if (endDate.isBefore(startDate)) {
       throw ArgumentError('endDate cannot be before startDate');
@@ -32,6 +33,9 @@ class Payslip extends HiveObject {
   @HiveField(4)
   double payRate;
 
+  @HiveField(5)
+  double? deductions;
+
   // Optionally, you can add a method to determine if the payslip is weekly or monthly
   String get periodType {
     final duration = endDate.difference(startDate).inDays;
@@ -48,6 +52,7 @@ class Payslip extends HiveObject {
     double? basePay,
     double? bonusesEarned,
     double? payRate,
+    double? deductions,
   }) {
     return Payslip(
       startDate: startDate ?? this.startDate,
@@ -55,6 +60,7 @@ class Payslip extends HiveObject {
       basePay: basePay ?? this.basePay,
       bonusesEarned: bonusesEarned ?? this.bonusesEarned,
       payRate: payRate ?? this.payRate,
+      deductions: deductions ?? this.deductions,
     );
   }
 }

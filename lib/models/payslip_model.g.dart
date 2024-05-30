@@ -22,13 +22,14 @@ class PayslipAdapter extends TypeAdapter<Payslip> {
       basePay: fields[2] as double,
       bonusesEarned: fields[3] as double,
       payRate: fields[4] as double,
+      deductions: fields[5] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Payslip obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.startDate)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class PayslipAdapter extends TypeAdapter<Payslip> {
       ..writeByte(3)
       ..write(obj.bonusesEarned)
       ..writeByte(4)
-      ..write(obj.payRate);
+      ..write(obj.payRate)
+      ..writeByte(5)
+      ..write(obj.deductions);
   }
 
   @override

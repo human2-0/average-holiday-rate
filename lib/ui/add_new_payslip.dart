@@ -22,6 +22,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
   double? _basePay;
   double? _bonusesEarned;
   double? _payRate;
+  double? _deductions;
   late PickerDateRange _selectedRange = PickerDateRange(
     DateTime.now(),
     DateTime.now(),
@@ -86,6 +87,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
       basePay: _basePay!,
       bonusesEarned: _bonusesEarned!,
       payRate: _payRate!,
+      deductions: _deductions,
     );
 
     // Add the Payslip and handle the response
@@ -128,7 +130,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
           ),
         ),
         title: Text(
-          'Add new payslip',
+          'New Payslip Entry',
           style: TextStyle(color: Colors.blueGrey.shade900),
         ),
         centerTitle: true,
@@ -280,6 +282,48 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                 ),
                 const SizedBox(height: 8,),
                 TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Deducted funds', // Use labelText to enable floating label behavior
+                    hintText: 'Enter deductions this month', // hintText is shown when the field is empty and not focused
+                    filled: true,
+                    alignLabelWithHint: true,
+                    fillColor: Colors.blue[50],
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue[100]!),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.red),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onSaved: (value) {
+                    // Parse the input, and if it's a negative number, convert to positive
+                    var parsedValue = double.tryParse(value ?? '');
+                    if (parsedValue != null && parsedValue < 0) {
+                      parsedValue = parsedValue.abs(); // Convert negative to positive
+                    }
+                    _deductions = parsedValue;
+                  },
+                  validator: (value) {
+                    // Ensure the value is not null and can be parsed to double
+                    if (value == null || value.isEmpty || double.tryParse(value) == null) {
+                      return 'Please enter any amount above 0.';
+                    }
+                    // Optionally, you can ensure no negative numbers are entered
+                    if (double.parse(value) < 0) {
+                      return 'Please enter a positive number.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8,),
+                TextFormField(
                   controller: TextEditingController(
                     text: ref
                         .read(userSettingsProvider(userId!))
@@ -319,7 +363,7 @@ class _AddPayslipScreenState extends ConsumerState<AddPayslipScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
                 // Submit Button
                 ElevatedButton(
                   child: const Text('Add Payslip'),

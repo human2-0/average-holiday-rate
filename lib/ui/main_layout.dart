@@ -24,18 +24,23 @@ class _MainLayoutState extends State<MainLayout> {
             IconButton(
               icon: const Icon(
                 Icons.insert_chart_outlined_rounded,
-                  size: 30,
+                size: 30,
               ),
-              onPressed: () async {await context.push('/');},
+              onPressed: () async {
+                await context.push('/');
+              },
             ),
             const SizedBox(
               width: 20, // Adjust width to fit the FAB
             ),
             IconButton(
-              icon: const Icon(size: 30,
+              icon: const Icon(
+                size: 30,
                 Icons.calendar_month_outlined,
               ),
-              onPressed: () async {await context.push('/history');},
+              onPressed: () async {
+                await context.push('/history');
+              },
             ),
             // Empty space for the FAB
             const SizedBox(
@@ -44,7 +49,7 @@ class _MainLayoutState extends State<MainLayout> {
             IconButton(
               icon: const Icon(
                 Icons.person,
-                  size: 30,
+                size: 30,
               ),
               onPressed: () {
                 context.go('/profile');
@@ -70,5 +75,6 @@ class _MainLayoutState extends State<MainLayout> {
         ),
       ),
       body: widget.bodyContent,
-    );}
+    );
+  }
 }

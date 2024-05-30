@@ -22,10 +22,14 @@ class PayslipRepository {
   Future<void> editPayslip(Payslip updatedPayslip) async {
     final box = await Hive.openBox<Payslip>('payslips');
     // Example: Find the payslip with specific start and end dates
-    final payslipKey = box.keys.firstWhere((k) {
-      final payslip = box.get(k);
-      return payslip?.startDate == updatedPayslip.startDate && payslip?.endDate == updatedPayslip.endDate;
-    }, orElse: () => null,);
+    final payslipKey = box.keys.firstWhere(
+      (k) {
+        final payslip = box.get(k);
+        return payslip?.startDate == updatedPayslip.startDate &&
+            payslip?.endDate == updatedPayslip.endDate;
+      },
+      orElse: () => null,
+    );
 
     if (payslipKey != null) {
       // Found the payslip, now update it with new data
@@ -37,7 +41,8 @@ class PayslipRepository {
           ..endDate = updatedPayslip.endDate
           ..basePay = updatedPayslip.basePay
           ..bonusesEarned = updatedPayslip.bonusesEarned
-          ..payRate = updatedPayslip.payRate;
+          ..payRate = updatedPayslip.payRate
+          ..deductions = updatedPayslip.deductions;
         await payslipToUpdate.save();
       }
     }

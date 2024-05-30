@@ -59,6 +59,9 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
     var localPayRate = payslip.payRate.toString();
     var localBasePay = payslip.basePay.toString();
     var localBonusEarned = payslip.bonusesEarned.toString();
+    var localDeductions = payslip.deductions == null
+        ? 0.toString()
+        : payslip.deductions.toString();
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // User must tap button to close the dialog
@@ -79,6 +82,20 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                 decoration: const InputDecoration(labelText: 'Bonus earned'),
                 keyboardType: TextInputType.number,
                 onChanged: (value) => localBonusEarned = value,
+              ),
+              TextFormField(
+                initialValue: localDeductions,
+                decoration: const InputDecoration(labelText: 'Deductions'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  var parsedValue = double.parse(value);
+                  if (parsedValue < 0) {
+                    parsedValue =
+                        parsedValue.abs(); // Convert negative to positive
+                  }
+
+                  localDeductions = parsedValue.toString();
+                },
               ),
               TextFormField(
                 initialValue: localPayRate,
@@ -103,10 +120,12 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
               final payRate = double.tryParse(localPayRate) ?? 0;
               final basePay = double.tryParse(localBasePay) ?? 0;
               final bonusesEarned = double.tryParse(localBonusEarned) ?? 0;
+              final deductions = double.tryParse(localDeductions) ?? 0;
               final updatedPayslip = payslip.copyWith(
                 basePay: basePay,
                 payRate: payRate,
                 bonusesEarned: bonusesEarned,
+                deductions: deductions,
               );
               await ref
                   .read(payslipNotifierProvider.notifier)
@@ -186,7 +205,8 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                       ? () async {
                                           await _pageController.previousPage(
                                             duration: const Duration(
-                                                milliseconds: 200,),
+                                              milliseconds: 200,
+                                            ),
                                             curve: Curves.easeInOut,
                                           );
                                         }
@@ -206,7 +226,8 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                           ? () async {
                                               await _pageController.nextPage(
                                                 duration: const Duration(
-                                                    milliseconds: 300,),
+                                                  milliseconds: 300,
+                                                ),
                                                 curve: Curves.easeInOut,
                                               );
                                             }
@@ -312,7 +333,7 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.black87,
-                                                      fontSize: 18,
+                                                      fontSize: 17,
                                                     ),
                                                   ),
                                                 ),
@@ -368,6 +389,33 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
                                                       color: Colors
                                                           .deepPurple[900],
                                                       fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 4,
+                                              ),
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.7,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                    Radius.circular(8),
+                                                  ),
+                                                  color: Colors.red[100],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    'Deductions: £-${formatNumbers(payslip.deductions ?? 0)}',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.red[800],
+                                                      fontSize: 16,
                                                     ),
                                                   ),
                                                 ),
@@ -500,13 +548,26 @@ class _PayslipHistoryState extends ConsumerState<PayslipHistory> {
 }
 
 String formatNumbers(double number) {
-  // Check if the number is an integer
-  if (number == number.toInt()) {
-    // If it is, return it as an integer string
-    return number.toInt().toString();
+  // Convert the number to a string
+  final numStr = number.toString();
+
+  // Check if there is a decimal point in the string
+  if (numStr.contains('.')) {
+    // Get the part of the string after the decimal point
+    final decimalPart = numStr.split('.')[1];
+
+    // Count the number of digits after the decimal point
+    final decimalCount = decimalPart.length;
+
+    // If the decimal part is only zeros, treat it as an integer
+    if (int.tryParse(decimalPart) == 0) {
+      return number.toInt().toString();
+    } else {
+      // Return the number with the exact number of decimal places
+      return number.toStringAsFixed(decimalCount);
+    }
   } else {
-    // If it's not, return it as a double with one decimal place
-    // Only if needed, otherwise return the original double converted to string
-    return number.toStringAsFixed(1).replaceAll('.0', '');
+    // If there is no decimal point, return the integer part
+    return numStr;
   }
 }

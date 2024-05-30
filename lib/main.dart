@@ -16,7 +16,6 @@ Future<void> main() async {
   Hive
     ..registerAdapter(PayslipAdapter())
     ..registerAdapter(SettingsAdapter());
-
   PaintingBinding.shaderWarmUp = MyShaderWarmUp();
 
   runApp(const ProviderScope(child: MyApp()));
